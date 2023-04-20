@@ -291,9 +291,8 @@ impl Viewer {
     }
 }
 
-fn main() -> Result<()> {
+fn run() -> Result<()> {
     let cmdline = Commandline::parse();
-    alternative_screen_buffer(true);
     // Clear screen initially so we know the cursor position,
     // instead of bothering to read it using escape sequences.
     clear_screen(false);
@@ -316,7 +315,8 @@ fn main() -> Result<()> {
                     }
                 }
                 Err(error) => {
-                    panic!("watch error: {}", error);
+                    eprintln!("watch error: {error}");
+                    alternative_screen_buffer(false);
                 }
             },
         )?;
@@ -328,6 +328,13 @@ fn main() -> Result<()> {
         tx.send(()).ok();
     })?;
     rx.recv()?;
-    alternative_screen_buffer(false);
     Ok(())
+}
+
+fn main() {
+    alternative_screen_buffer(true);
+    if let Err(error) = run() {
+        eprintln!("{error}");
+    }
+    alternative_screen_buffer(false);
 }
