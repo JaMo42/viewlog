@@ -14,6 +14,10 @@ use noecho::NoEcho;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+fn goto (line: usize, col: usize) {
+  print! ("\x1b[{};{}H", 1 + line, 1 + col);
+}
+
 fn clear_screen (discard_old: bool) {
   // Clear screen
   print! ("\x1b[2J");
@@ -22,18 +26,7 @@ fn clear_screen (discard_old: bool) {
     print! ("\x1b[3J");
   }
   // Move to top-left corner
-  print! ("\x1b[1;1H");
-}
-
-fn goto (line: usize, col: usize) {
-  print! ("\x1b[{};{}H", 1 + line, 1 + col);
-}
-
-fn repeat_ascii (char: char, times: usize) -> String {
-  if !char.is_ascii () {
-    panic! ("repeat_ascii with non-ascii character");
-  }
-  String::from_utf8 (vec! [char as u8; times]).unwrap ()
+  goto(0, 0);
 }
 
 fn show_cursor (yay_or_nay: bool) {
@@ -42,6 +35,21 @@ fn show_cursor (yay_or_nay: bool) {
   } else {
     print! ("\x1b[?25l");
   }
+}
+
+fn alternative_screen_buffer(enable: bool) {
+  if enable {
+    print!("\x1b[?1049h");
+  } else {
+    print!("\x1b[?1049l");
+  }
+}
+
+fn repeat_ascii (char: char, times: usize) -> String {
+  if !char.is_ascii () {
+    panic! ("repeat_ascii with non-ascii character");
+  }
+  String::from_utf8 (vec! [char as u8; times]).unwrap ()
 }
 
 struct HideCursor;
@@ -285,11 +293,16 @@ impl Viewer {
 
 fn main () -> Result<()> {
   let cmdline = Commandline::parse ();
-  // Clear screen initially so we know the cursor position, instead of
-  // bothering to read it using escape sequences.
+  alternative_screen_buffer(true);
+  // Clear screen initially so we know the cursor position,
+  // instead of bothering to read it using escape sequences.
   clear_screen (false);
   let mut viewer = Viewer::new (&cmdline)?;
   let _hide_cursor = HideCursor::begin ();
+  // This `print_line` causes a update even
+  // if the viewed file is initially empty
+  viewer.print_line();
+  stdout().flush().ok();
   // Read initial content
   viewer.on_change ();
   // Watch for changes
@@ -315,6 +328,6 @@ fn main () -> Result<()> {
     tx.send (()).ok ();
   })?;
   rx.recv ()?;
-  println! ();
+  alternative_screen_buffer(false);
   Ok (())
 }
