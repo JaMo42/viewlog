@@ -291,8 +291,7 @@ impl Viewer {
     }
 }
 
-fn run() -> Result<()> {
-    let cmdline = Commandline::parse();
+fn run(cmdline: Commandline) -> Result<()> {
     // Clear screen initially so we know the cursor position,
     // instead of bothering to read it using escape sequences.
     clear_screen(false);
@@ -334,8 +333,9 @@ fn run() -> Result<()> {
 
 fn main() {
     let mut code = 0;
+    let cmdline = Commandline::parse();
     alternative_screen_buffer(true);
-    if let Err(error) = run() {
+    if let Err(error) = run(cmdline) {
         eprintln!("{error}");
         code = 1;
     }
