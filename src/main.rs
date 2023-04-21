@@ -317,6 +317,7 @@ fn run() -> Result<()> {
                 Err(error) => {
                     eprintln!("watch error: {error}");
                     alternative_screen_buffer(false);
+                    std::process::exit(1);
                 }
             },
         )?;
@@ -332,9 +333,12 @@ fn run() -> Result<()> {
 }
 
 fn main() {
+    let mut code = 0;
     alternative_screen_buffer(true);
     if let Err(error) = run() {
         eprintln!("{error}");
+        code = 1;
     }
     alternative_screen_buffer(false);
+    std::process::exit(code);
 }
