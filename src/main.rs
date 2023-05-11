@@ -38,6 +38,9 @@ fn show_cursor(yay_or_nay: bool) {
 }
 
 fn alternative_screen_buffer(enable: bool) {
+    if !cfg!(feature = "altbuf") {
+        return;
+    }
     if enable {
         print!("\x1b[?1049h");
     } else {

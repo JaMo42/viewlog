@@ -4,6 +4,17 @@ Tiny log file viewer, similar to `tail -f`.
 
 It works on Windows and Linux.
 
+## Building
+
+```
+$ cargo build
+OR:
+$ cargo build --features altbuf
+```
+
+Using the altbuf feature runs the program using the [alternate screen buffer](https://terminalguide.namepad.de/mode/p47/).
+This is an optional feature because some terminals will not let you scroll in the alternate screen buffer so you can only see what's currently on screen.
+
 ## Usage
 
 ```
